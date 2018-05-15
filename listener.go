@@ -21,7 +21,6 @@ func NewTCPListener(address string, callback Handler, options ...ListenerOption)
 		return NewListener(listener, callback, options...), nil
 	}
 }
-
 func NewListener(inner net.Listener, callback Handler, options ...ListenerOption) *Listener {
 	this := &Listener{inner: inner, callback: callback}
 
@@ -51,10 +50,9 @@ func (this *Listener) isOpen() bool {
 
 ////////////////////////////////////////////////////
 
-type Handler func(net.Conn, error)
 type ListenerOption func(this *Listener)
 
-func WithTLSServer(config *tls.Config) ListenerOption {
+func ListenWithTLS(config *tls.Config) ListenerOption {
 	return func(this *Listener) {
 		callback := this.callback
 		this.callback = func(socket net.Conn, err error) {
@@ -65,18 +63,7 @@ func WithTLSServer(config *tls.Config) ListenerOption {
 		}
 	}
 }
-func WithTLSClient(config *tls.Config) ListenerOption {
-	return func(this *Listener) {
-		callback := this.callback
-		this.callback = func(socket net.Conn, err error) {
-			if err == nil {
-				socket, err = NewTLSClient(socket, config)
-			}
-			callback(nil, err)
-		}
-	}
-}
-func WithGZip(level int) ListenerOption {
+func ListenWithGZip(level int) ListenerOption {
 	return func(this *Listener) {
 		callback := this.callback
 		this.callback = func(socket net.Conn, err error) {
