@@ -9,13 +9,13 @@ type Dialer interface {
 	Dial(string, string) (net.Conn, error)
 }
 
-func NewDialer() Dialer {
+func DefaultDialer() Dialer {
 	return &net.Dialer{}
 }
 
 ////////////////////////////////////////////////////
 
-func OpenTCPListener(address string) net.Listener {
+func DefaultTCPListener(address string) net.Listener {
 	if listener, err := NewTCPListener(address); err != nil {
 		log.Panic(err)
 		return nil

@@ -30,13 +30,13 @@ func main() {
 }
 
 func newDialer() transports.Dialer {
-	dialer := transports.NewDialer()
+	dialer := transports.DefaultDialer()
 	dialer = transports.NewGZipDialer(dialer, transports.BestCompression)
 	return dialer
 }
 
 func openListener(address string) net.Listener {
-	listener := transports.OpenTCPListener(address)
+	listener := transports.DefaultTCPListener(address)
 	listener = transports.NewGZipListener(listener, transports.BestCompression)
 	return listener
 }
