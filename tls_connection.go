@@ -9,7 +9,7 @@ type TLSConnection struct {
 	net.Conn
 }
 
-func NewTLSClientConnection(inner net.Conn, config *tls.Config) (conn *TLSConnection, err error) {
+func NewTLSClient(inner net.Conn, config *tls.Config) (conn *TLSConnection, err error) {
 	connection := tls.Client(inner, config)
 	if err = connection.Handshake(); err == nil {
 		return &TLSConnection{Conn: connection}, nil
@@ -19,7 +19,7 @@ func NewTLSClientConnection(inner net.Conn, config *tls.Config) (conn *TLSConnec
 	return nil, err
 }
 
-func NewTLSServerConnection(inner net.Conn, config *tls.Config) (conn *TLSConnection, err error) {
+func NewTLSServer(inner net.Conn, config *tls.Config) (conn *TLSConnection, err error) {
 	connection := tls.Server(inner, config)
 	if err = connection.Handshake(); err == nil {
 		return &TLSConnection{Conn: connection}, nil

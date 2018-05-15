@@ -43,6 +43,6 @@ func (this *TLSDialer) Dial(network, address string) (net.Conn, error) {
 	if conn, err := this.Dialer.Dial(network, address); err != nil {
 		return nil, err
 	} else {
-		return NewTLSClientConnection(conn, this.config)
+		return NewTLSClient(conn, this.config)
 	}
 }

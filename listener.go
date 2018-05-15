@@ -3,75 +3,50 @@ package transports
 import (
 	"crypto/tls"
 	"net"
-	"sync/atomic"
 )
 
-type Handler func(net.Conn, error)
-
-type Listener struct {
-	state    uint64
-	inner    net.Listener
-	callback Handler
-}
-
-func NewTCPListener(address string, callback Handler, options ...ListenerOption) (*Listener, error) {
+func NewTCPListener(address string) (net.Listener, error) {
 	if resolved, err := net.ResolveTCPAddr("tcp", address); err != nil {
 		return nil, err
-	} else if listener, err := net.ListenTCP("tcp", resolved); err != nil {
-		return nil, err
 	} else {
-		return NewListener(listener, callback, options...), nil
+		return net.ListenTCP("tcp", resolved)
 	}
-}
-func NewListener(inner net.Listener, callback Handler, options ...ListenerOption) *Listener {
-	this := &Listener{inner: inner, callback: callback}
-	for _, option := range options {
-		option(this)
-	}
-	return this
-}
-
-func (this *Listener) Listen() {
-	for this.isOpen() {
-		if socket, err := this.inner.Accept(); err == nil {
-			go this.callback(socket, nil)
-		}
-	}
-}
-
-func (this *Listener) Close() error {
-	err := this.inner.Close()
-	atomic.StoreUint64(&this.state, 1)
-	return err
-}
-func (this *Listener) isOpen() bool {
-	return atomic.LoadUint64(&this.state) == 0
 }
 
 ////////////////////////////////////////////////////
 
-type ListenerOption func(this *Listener)
+type GZipListener struct {
+	net.Listener
+	compressionLevel int
+}
 
-func ListenWithTLS(config *tls.Config) ListenerOption {
-	return func(this *Listener) {
-		callback := this.callback
-		this.callback = func(socket net.Conn, err error) {
-			if err == nil {
-				socket, err = NewTLSServerConnection(socket, config)
-			}
-			callback(socket, err)
-		}
+func NewGZipListener(inner net.Listener, compressionLevel int) *GZipListener {
+	return &GZipListener{Listener: inner, compressionLevel: compressionLevel}
+}
+
+func (this *GZipListener) Accept() (net.Conn, error) {
+	if conn, err := this.Listener.Accept(); err != nil {
+		return nil, err
+	} else {
+		return NewGZipConnection(conn, this.compressionLevel)
 	}
 }
-func ListenWithGZip(level int) ListenerOption {
-	return func(this *Listener) {
-		callback := this.callback
-		this.callback = func(socket net.Conn, err error) {
-			if err == nil {
-				socket, err = NewGZipConnection(socket, level)
-			}
-			callback(socket, err)
-		}
 
+////////////////////////////////////////////////////
+
+type TLSListener struct {
+	net.Listener
+	config *tls.Config
+}
+
+func NewTLSListener(inner net.Listener, config *tls.Config) *TLSListener {
+	return &TLSListener{Listener: inner, config: config}
+}
+
+func (this *TLSListener) Accept() (net.Conn, error) {
+	if conn, err := this.Listener.Accept(); err != nil {
+		return nil, err
+	} else {
+		return NewTLSServer(conn, this.config)
 	}
 }
