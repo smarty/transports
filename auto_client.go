@@ -10,60 +10,60 @@ type dialer interface {
 	Dial(string) (net.Conn, error)
 }
 
-type RetryClient struct {
+type AutoClient struct {
 	address  string
 	dialer   dialer
 	active   net.Conn
 	disposed bool
 }
 
-func NewRetryClient(address string, dialer dialer) *RetryClient {
-	return &RetryClient{address: address, dialer: dialer}
+func NewAutoClient(address string, dialer dialer) *AutoClient {
+	return &AutoClient{address: address, dialer: dialer}
 }
 
-func (this *RetryClient) Read(buffer []byte) (int, error) {
+func (this *AutoClient) Read(buffer []byte) (int, error) {
 	if conn, err := this.established(); err != nil {
 		return 0, err
 	} else {
 		return conn.Read(buffer)
 	}
 }
-func (this *RetryClient) Write(buffer []byte) (int, error) {
+func (this *AutoClient) Write(buffer []byte) (int, error) {
 	if conn, err := this.established(); err != nil {
 		return 0, err
 	} else {
 		return conn.Write(buffer)
 	}
 }
-func (this *RetryClient) LocalAddr() net.Addr {
+func (this *AutoClient) LocalAddr() net.Addr {
 	if conn, err := this.established(); err != nil {
 		return nil
 	} else {
 		return conn.LocalAddr()
 	}
 }
-func (this *RetryClient) RemoteAddr() net.Addr {
+func (this *AutoClient) RemoteAddr() net.Addr {
 	if conn, err := this.established(); err != nil {
 		return nil
 	} else {
 		return conn.RemoteAddr()
 	}
 }
-func (this *RetryClient) SetDeadline(instant time.Time) error {
+func (this *AutoClient) SetDeadline(instant time.Time) error {
 	if conn, err := this.established(); err != nil {
 		return nil
 	} else {
 		return conn.SetDeadline(instant)
 	}
 }
-func (this *RetryClient) SetReadDeadline(instant time.Time) error {
+func (this *AutoClient) SetReadDeadline(instant time.Time) error {
 	if conn, err := this.established(); err != nil {
 		return nil
 	} else {
 		return conn.SetReadDeadline(instant)
 	}
 }
-func (this *RetryClient) SetWriteDeadline(instant time.Time) error {
+func (this *AutoClient) SetWriteDeadline(instant time.Time) error {
 	if conn, err := this.established(); err != nil {
 		return nil
 	} else {
@@ -71,7 +71,7 @@ func (this *RetryClient) SetWriteDeadline(instant time.Time) error {
 	}
 }
 
-func (this *RetryClient) established() (net.Conn, error) {
+func (this *AutoClient) established() (net.Conn, error) {
 	if this.disposed {
 		return nil, DisposedConnection
 	} else if this.active != nil {
@@ -80,7 +80,7 @@ func (this *RetryClient) established() (net.Conn, error) {
 		return this.connect()
 	}
 }
-func (this *RetryClient) connect() (net.Conn, error) {
+func (this *AutoClient) connect() (net.Conn, error) {
 	active, err := this.dialer.Dial(this.address)
 	if err != nil {
 		return nil, err
@@ -89,12 +89,12 @@ func (this *RetryClient) connect() (net.Conn, error) {
 	return active, nil
 }
 
-func (this *RetryClient) Close() error {
+func (this *AutoClient) Close() error {
 	this.close()
 	this.disposed = true
 	return nil
 }
-func (this *RetryClient) close() {
+func (this *AutoClient) close() {
 	active := this.active
 	if active != nil {
 		this.active.Close()
