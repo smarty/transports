@@ -12,6 +12,16 @@ type Listener struct {
 	callback Handler
 }
 
+func NewTCPListener(address string, callback Handler, options ...ListenerOption) (*Listener, error) {
+	if resolved, err := net.ResolveTCPAddr("tcp", address); err != nil {
+		return nil, err
+	} else if listener, err := net.ListenTCP("tcp", resolved); err != nil {
+		return nil, err
+	} else {
+		return NewListener(listener, callback, options...), nil
+	}
+}
+
 func NewListener(inner net.Listener, callback Handler, options ...ListenerOption) *Listener {
 	this := &Listener{inner: inner, callback: callback}
 
