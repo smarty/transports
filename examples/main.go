@@ -4,14 +4,18 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"time"
 
 	"github.com/smartystreets/transports"
 )
 
-const address = "127.0.0.1:8080"
+const address = "127.0.0.1:8081"
 
 func main() {
-	go clientSocket(newDialer().Dial("tcp", address))
+	go func() {
+		time.Sleep(time.Millisecond) // race condition: let the server start
+		clientSocket(newDialer().Dial("tcp", address))
+	}()
 
 	fmt.Println("[SERVER] Listening...")
 	listener := openListener(address)
@@ -22,7 +26,7 @@ func main() {
 
 func newDialer() transports.Dialer {
 	dialer := transports.NewDialer()
-	dialer = transports.NewGZipDialer(dialer, 9)
+	dialer = transports.NewGZipDialer(dialer, transports.BestCompression)
 	return dialer
 }
 
