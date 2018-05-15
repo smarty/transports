@@ -6,6 +6,8 @@ import (
 	"sync/atomic"
 )
 
+type Handler func(net.Conn, error)
+
 type Listener struct {
 	state    uint64
 	inner    net.Listener
@@ -23,11 +25,9 @@ func NewTCPListener(address string, callback Handler, options ...ListenerOption)
 }
 func NewListener(inner net.Listener, callback Handler, options ...ListenerOption) *Listener {
 	this := &Listener{inner: inner, callback: callback}
-
 	for _, option := range options {
 		option(this)
 	}
-
 	return this
 }
 
@@ -57,7 +57,7 @@ func ListenWithTLS(config *tls.Config) ListenerOption {
 		callback := this.callback
 		this.callback = func(socket net.Conn, err error) {
 			if err == nil {
-				socket, err = NewTLSServer(socket, config)
+				socket, err = NewTLSServerConnection(socket, config)
 			}
 			callback(nil, err)
 		}
@@ -68,8 +68,9 @@ func ListenWithGZip(level int) ListenerOption {
 		callback := this.callback
 		this.callback = func(socket net.Conn, err error) {
 			if err == nil {
-				socket, err = NewGZip(socket, level)
+				socket, err = NewGZipConnection(socket, level)
 			}
+
 			callback(nil, err)
 		}
 	}

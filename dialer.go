@@ -5,52 +5,44 @@ import (
 	"net"
 )
 
-type Dialer struct {
-	network  string
-	inner    net.Dialer
-	callback Handler
-}
-
-func NewTCPDialer(callback Handler, options ...DialerOption) *Dialer {
-	return NewDialer(net.Dialer{}, callback, options...)
-}
-func NewDialer(inner net.Dialer, callback Handler, options ...DialerOption) *Dialer {
-	this := &Dialer{network: "tcp", inner: inner, callback: callback}
-
-	for _, option := range options {
-		option(this)
-	}
-
-	return this
-}
-
-func (this *Dialer) Dial(address string) (net.Conn, error) {
-	return this.inner.Dial(this.network, address)
+type Dialer interface {
+	Dial(string, string) (net.Conn, error)
 }
 
 ////////////////////////////////////////////////////
 
-type DialerOption func(this *Dialer)
+type GZipDialer struct {
+	Dialer
+	compression int
+}
 
-func DialWithTLS(config *tls.Config) DialerOption {
-	return func(this *Dialer) {
-		callback := this.callback
-		this.callback = func(socket net.Conn, err error) {
-			if err == nil {
-				socket, err = NewTLSClient(socket, config)
-			}
-			callback(nil, err)
-		}
+func NewGZipDialer(inner Dialer, compressionLevel int) Dialer {
+	return &GZipDialer{Dialer: inner, compression: compressionLevel}
+}
+
+func (this *GZipDialer) Dial(network, address string) (net.Conn, error) {
+	if conn, err := this.Dialer.Dial(network, address); err != nil {
+		return nil, err
+	} else {
+		return NewGZipConnection(conn, this.compression)
 	}
 }
-func DialWithGZip(level int) DialerOption {
-	return func(this *Dialer) {
-		callback := this.callback
-		this.callback = func(socket net.Conn, err error) {
-			if err == nil {
-				socket, err = NewGZip(socket, level)
-			}
-			callback(nil, err)
-		}
+
+////////////////////////////////////////////////////
+
+type TLSDialer struct {
+	Dialer
+	config *tls.Config
+}
+
+func NewTLSDialer(inner Dialer, config *tls.Config) Dialer {
+	return &TLSDialer{Dialer: inner, config: config}
+}
+
+func (this *TLSDialer) Dial(network, address string) (net.Conn, error) {
+	if conn, err := this.Dialer.Dial(network, address); err != nil {
+		return nil, err
+	} else {
+		return NewTLSClientConnection(conn, this.config)
 	}
 }
