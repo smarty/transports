@@ -59,7 +59,7 @@ func ListenWithTLS(config *tls.Config) ListenerOption {
 			if err == nil {
 				socket, err = NewTLSServerConnection(socket, config)
 			}
-			callback(nil, err)
+			callback(socket, err)
 		}
 	}
 }
@@ -70,8 +70,8 @@ func ListenWithGZip(level int) ListenerOption {
 			if err == nil {
 				socket, err = NewGZipConnection(socket, level)
 			}
-
-			callback(nil, err)
+			callback(socket, err)
 		}
+
 	}
 }

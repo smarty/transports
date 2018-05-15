@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net"
 
 	"github.com/smartystreets/transports"
@@ -10,7 +11,7 @@ import (
 func main() {
 	go func() {
 		var dialer transports.Dialer = &net.Dialer{}
-		//dialer = transports.NewGZipDialer(dialer, gzip.NoCompression)
+		dialer = transports.NewGZipDialer(dialer, transports.BestCompression)
 		clientSocket(dialer.Dial("tcp", "127.0.0.1:8080"))
 	}()
 
@@ -34,9 +35,9 @@ func clientSocket(socket net.Conn, err error) {
 
 	if err != nil {
 		fmt.Println("ERROR:", err)
+		return
 	}
 
-	fmt.Println("Writing")
 	_, err = socket.Write([]byte("Hello, World!"))
 	if err != nil {
 		fmt.Println("Write error:", err)
@@ -50,13 +51,16 @@ func serverSocket(socket net.Conn, err error) {
 
 	if err != nil {
 		fmt.Println("ERROR:", err)
+		return
 	}
 
 	buffer := make([]byte, 64)
-	_, err = socket.Read(buffer)
-	if err != nil {
-		fmt.Println("Read error:", err)
-	} else {
-		fmt.Println(string(buffer))
+	read, err := socket.Read(buffer)
+	if read > 0 {
+		fmt.Println(string(buffer[:read]))
+	}
+
+	if err != nil && err != io.EOF {
+		fmt.Println("ERROR:", err)
 	}
 }

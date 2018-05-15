@@ -31,3 +31,10 @@ func (this *GZipConnection) Close() error {
 	this.reader.Close()
 	return this.Conn.Close()
 }
+
+const (
+	NoCompression      = flate.NoCompression
+	BestSpeed          = flate.BestSpeed
+	BestCompression    = flate.BestCompression
+	DefaultCompression = flate.DefaultCompression
+)
