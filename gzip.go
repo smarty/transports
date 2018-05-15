@@ -32,9 +32,49 @@ func (this *GZipConnection) Close() error {
 	return this.Conn.Close()
 }
 
+////////////////////////////////////////////////////
+
 const (
 	NoCompression      = flate.NoCompression
 	BestSpeed          = flate.BestSpeed
 	BestCompression    = flate.BestCompression
 	DefaultCompression = flate.DefaultCompression
 )
+
+////////////////////////////////////////////////////
+
+type GZipListener struct {
+	net.Listener
+	compressionLevel int
+}
+
+func NewGZipListener(inner net.Listener, compressionLevel int) *GZipListener {
+	return &GZipListener{Listener: inner, compressionLevel: compressionLevel}
+}
+
+func (this *GZipListener) Accept() (net.Conn, error) {
+	if conn, err := this.Listener.Accept(); err != nil {
+		return nil, err
+	} else {
+		return NewGZipConnection(conn, this.compressionLevel)
+	}
+}
+
+////////////////////////////////////////////////////
+
+type GZipDialer struct {
+	Dialer
+	compression int
+}
+
+func NewGZipDialer(inner Dialer, compressionLevel int) Dialer {
+	return &GZipDialer{Dialer: inner, compression: compressionLevel}
+}
+
+func (this *GZipDialer) Dial(network, address string) (net.Conn, error) {
+	if conn, err := this.Dialer.Dial(network, address); err != nil {
+		return nil, err
+	} else {
+		return NewGZipConnection(conn, this.compression)
+	}
+}
