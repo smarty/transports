@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io"
 	"net"
@@ -11,14 +12,19 @@ import (
 func main() {
 	go func() {
 		var dialer transports.Dialer = &net.Dialer{}
-		dialer = transports.NewGZipDialer(dialer, transports.BestCompression)
+		dialer = transports.NewTLSDialer(dialer, &tls.Config{InsecureSkipVerify: true})
+		//dialer = transports.NewGZipDialer(dialer, transports.BestCompression)
 		clientSocket(dialer.Dial("tcp", "127.0.0.1:8080"))
 	}()
 
+	cert, _ := tls.LoadX509KeyPair("", "")
 	listener, err := transports.NewTCPListener(
 		"127.0.0.1:8080",
 		serverSocket,
-		transports.ListenWithGZip(0))
+		//transports.ListenWithGZip(0),
+		transports.ListenWithTLS(&tls.Config{
+			Certificates: []tls.Certificate{cert},
+		}))
 
 	if err != nil {
 		fmt.Println(err)
