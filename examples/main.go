@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io"
 	"net"
@@ -10,17 +11,20 @@ import (
 	"github.com/smartystreets/transports"
 )
 
-const address = "127.0.0.1:8081"
+const (
+	certificateFile = ""
+	serverName      = ""
+	address         = "127.0.0.1:8081"
+)
 
 var dialAddress = &url.URL{Scheme: "tcp", Host: address}
 
 func main() {
 	go func() {
+		time.Sleep(time.Millisecond * 250)
 		conn := transports.NewAutoConnection(dialAddress, newDialer())
 		clientSocket(conn)
 	}()
-
-	time.Sleep(time.Second)
 
 	fmt.Println("[SERVER] Listening...")
 	listener := openListener(address)
@@ -30,15 +34,22 @@ func main() {
 }
 
 func newDialer() transports.Dialer {
-	dialer := transports.DefaultDialer()
+	var dialer transports.Dialer
+	dialer = transports.NewTLSDialer(&tls.Config{ServerName: serverName})
 	dialer = transports.NewGZipDialer(dialer, transports.BestCompression)
 	return dialer
 }
 
 func openListener(address string) net.Listener {
 	listener := transports.DefaultTCPListener(address)
+	listener = openTLSListener(listener)
 	listener = transports.NewGZipListener(listener, transports.BestCompression)
 	return listener
+}
+func openTLSListener(inner net.Listener) net.Listener {
+	cert, _ := tls.LoadX509KeyPair(certificateFile, certificateFile)
+	certs := []tls.Certificate{cert}
+	return transports.NewTLSListener(inner, &tls.Config{Certificates: certs})
 }
 
 func clientSocket(socket net.Conn) {
@@ -46,9 +57,12 @@ func clientSocket(socket net.Conn) {
 		defer socket.Close()
 	}
 
-	_, err := socket.Write([]byte("Hello, World!"))
+	fmt.Println("[CLIENT] Writing bytes")
+	written, err := socket.Write([]byte("Hello, World!"))
 	if err != nil {
 		fmt.Println("[CLIENT] Write error:", err)
+	} else {
+		fmt.Println("[CLIENT] Bytes written:", written)
 	}
 }
 
