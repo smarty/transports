@@ -1,9 +1,27 @@
 package transports
 
-import "net"
+import (
+	"log"
+	"net"
+)
 
 type Dialer interface {
 	Dial(string, string) (net.Conn, error)
+}
+
+func NewDialer() Dialer {
+	return &net.Dialer{}
+}
+
+////////////////////////////////////////////////////
+
+func OpenTCPListener(address string) net.Listener {
+	if listener, err := NewTCPListener(address); err != nil {
+		log.Panic(err)
+		return nil
+	} else {
+		return listener
+	}
 }
 
 func NewTCPListener(address string) (net.Listener, error) {
