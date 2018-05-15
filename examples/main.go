@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/url"
 	"time"
 
 	"github.com/smartystreets/transports"
@@ -11,11 +12,15 @@ import (
 
 const address = "127.0.0.1:8081"
 
+var dialAddress = &url.URL{Scheme: "tcp", Host: address}
+
 func main() {
 	go func() {
-		time.Sleep(time.Millisecond) // race condition: let the server start
-		clientSocket(newDialer().Dial("tcp", address))
+		conn := transports.NewAutoConnection(dialAddress, newDialer())
+		clientSocket(conn)
 	}()
+
+	time.Sleep(time.Second)
 
 	fmt.Println("[SERVER] Listening...")
 	listener := openListener(address)
@@ -36,17 +41,12 @@ func openListener(address string) net.Listener {
 	return listener
 }
 
-func clientSocket(socket net.Conn, err error) {
+func clientSocket(socket net.Conn) {
 	if socket != nil {
 		defer socket.Close()
 	}
 
-	if err != nil {
-		fmt.Println("[CLIENT] ERROR:", err)
-		return
-	}
-
-	_, err = socket.Write([]byte("Hello, World!"))
+	_, err := socket.Write([]byte("Hello, World!"))
 	if err != nil {
 		fmt.Println("[CLIENT] Write error:", err)
 	}

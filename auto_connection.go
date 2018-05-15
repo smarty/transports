@@ -8,13 +8,13 @@ import (
 )
 
 type AutoConnection struct {
-	address  url.URL
+	address  *url.URL
 	dialer   Dialer
 	active   net.Conn
 	disposed bool
 }
 
-func NewAutoConnection(address url.URL, dialer Dialer) *AutoConnection {
+func NewAutoConnection(address *url.URL, dialer Dialer) *AutoConnection {
 	return &AutoConnection{address: address, dialer: dialer}
 }
 
