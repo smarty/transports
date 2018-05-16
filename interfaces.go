@@ -3,15 +3,24 @@ package transports
 import (
 	"log"
 	"net"
+	"time"
 )
 
 type Dialer interface {
 	Dial(string, string) (net.Conn, error)
 }
 
-func DefaultDialer() Dialer {
-	return &net.Dialer{}
+func DefaultDialer(options ...DialerOption) Dialer {
+	this := &net.Dialer{}
+	for _, option := range options {
+		option(this)
+	}
+	return this
 }
+
+type DialerOption func(this *net.Dialer)
+
+func WithDialTimeout(timeout time.Duration) DialerOption { return func(this *net.Dialer) { this.Timeout = timeout } }
 
 ////////////////////////////////////////////////////
 
