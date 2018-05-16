@@ -13,14 +13,15 @@ func NewTLSListener(inner net.Listener, config *tls.Config) net.Listener {
 
 type TLSDialer struct {
 	config *tls.Config
+	dialer Dialer
 }
 
-func NewTLSDialer(config *tls.Config) Dialer {
-	return &TLSDialer{config: config}
+func NewTLSDialer(dialer Dialer, config *tls.Config) Dialer {
+	return &TLSDialer{dialer: dialer, config: config}
 }
 
 func (this *TLSDialer) Dial(network, address string) (net.Conn, error) {
-	return tls.Dial(network, address, this.config)
+	return tls.DialWithDialer(this.dialer.(*net.Dialer), network, address, this.config)
 }
 
 func DefaultTLSConfig() *tls.Config {
