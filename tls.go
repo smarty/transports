@@ -16,8 +16,12 @@ type TLSDialer struct {
 	dialer Dialer
 }
 
-func NewTLSDialer(dialer Dialer, config *tls.Config) Dialer {
-	return &TLSDialer{dialer: dialer, config: config}
+func NewTLSDialer(dialer Dialer, options ...TLSDialerOption) Dialer {
+	this := &TLSDialer{dialer: dialer, config: DefaultTLSConfig()}
+	for _, option := range options {
+		option(this)
+	}
+	return this
 }
 
 func (this *TLSDialer) Dial(network, address string) (net.Conn, error) {
@@ -44,4 +48,10 @@ func TLSConfigWithPEM(filename string) (*tls.Config, error) {
 		config.Certificates = []tls.Certificate{cert}
 		return config, nil
 	}
+}
+
+type TLSDialerOption func(*TLSDialer)
+
+func WithTLSConfig(config *tls.Config) TLSDialerOption {
+	return func(this *TLSDialer) { this.config = config }
 }
