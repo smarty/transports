@@ -9,7 +9,7 @@ import (
 type GZipConnection struct {
 	net.Conn
 	reader io.ReadCloser
-	writer io.WriteCloser
+	writer *flate.Writer
 }
 
 func NewGZipConnection(inner net.Conn, level int) (*GZipConnection, error) {
@@ -24,7 +24,13 @@ func (this *GZipConnection) Read(buffer []byte) (int, error) {
 	return this.reader.Read(buffer)
 }
 func (this *GZipConnection) Write(buffer []byte) (int, error) {
-	return this.writer.Write(buffer)
+	if written, err := this.writer.Write(buffer); err != nil {
+		return 0, err
+	} else if err = this.writer.Flush(); err != nil {
+		return 0, err
+	} else {
+		return written, nil
+	}
 }
 func (this *GZipConnection) Close() error {
 	this.writer.Close()
