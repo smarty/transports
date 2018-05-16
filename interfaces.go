@@ -11,7 +11,7 @@ type Dialer interface {
 }
 
 func DefaultDialer(options ...DialerOption) Dialer {
-	this := &net.Dialer{}
+	this := &net.Dialer{Timeout: time.Duration * 15}
 	for _, option := range options {
 		option(this)
 	}
@@ -20,7 +20,9 @@ func DefaultDialer(options ...DialerOption) Dialer {
 
 type DialerOption func(this *net.Dialer)
 
-func WithDialTimeout(timeout time.Duration) DialerOption { return func(this *net.Dialer) { this.Timeout = timeout } }
+func WithDialTimeout(timeout time.Duration) DialerOption {
+	return func(this *net.Dialer) { this.Timeout = timeout }
+}
 
 ////////////////////////////////////////////////////
 
