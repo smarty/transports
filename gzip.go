@@ -67,8 +67,12 @@ type GZipDialer struct {
 	compression int
 }
 
-func NewGZipDialer(inner Dialer, compressionLevel int) Dialer {
-	return &GZipDialer{Dialer: inner, compression: compressionLevel}
+func NewGZipDialer(inner Dialer, options ...GZipDialerOption) Dialer {
+	this := &GZipDialer{Dialer: inner, compression: DefaultCompression}
+	for _, option := range options {
+		option(this)
+	}
+	return this
 }
 
 func (this *GZipDialer) Dial(network, address string) (net.Conn, error) {
@@ -77,4 +81,12 @@ func (this *GZipDialer) Dial(network, address string) (net.Conn, error) {
 	} else {
 		return NewGZipConnection(conn, this.compression)
 	}
+}
+
+////////////////////////////////////////////////////
+
+type GZipDialerOption func(*GZipDialer)
+
+func WithCompressionLevel(level int) GZipDialerOption {
+	return func(this *GZipDialer) { this.compression = level }
 }
