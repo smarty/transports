@@ -23,7 +23,7 @@ func (this *TLSDialer) Dial(network, address string) (net.Conn, error) {
 	return tls.Dial(network, address, this.config)
 }
 
-func DefaultConfig() *tls.Config {
+func DefaultTLSConfig() *tls.Config {
 	return &tls.Config{
 		MinVersion:               tls.VersionTLS12,
 		PreferServerCipherSuites: true,
@@ -35,11 +35,11 @@ func DefaultConfig() *tls.Config {
 		},
 	}
 }
-func ConfigWithPEM(filename string) (*tls.Config, error) {
+func TLSConfigWithPEM(filename string) (*tls.Config, error) {
 	if cert, err := tls.LoadX509KeyPair(filename, filename); err != nil {
 		return nil, err
 	} else {
-		config := DefaultConfig()
+		config := DefaultTLSConfig()
 		config.Certificates = []tls.Certificate{cert}
 		return config, nil
 	}
