@@ -68,7 +68,7 @@ type GZipDialer struct {
 }
 
 func NewGZipDialer(inner Dialer, options ...GZipDialerOption) Dialer {
-	this := &GZipDialer{Dialer: inner, compression: DefaultCompression}
+	this := &GZipDialer{Dialer: inner, compression: BestCompression}
 	for _, option := range options {
 		option(this)
 	}
