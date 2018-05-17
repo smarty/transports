@@ -7,24 +7,25 @@ import (
 
 type TraceConnection struct {
 	net.Conn
-	name string
+	name    string
+	address interface{}
 }
 
 func NewTraceConnection(inner net.Conn, name string) *TraceConnection {
 	log.Printf("[INFO] Socket established for [%s] to [%s]\n", name, inner.RemoteAddr())
-	return &TraceConnection{Conn: inner, name: name}
+	return &TraceConnection{Conn: inner, name: name, address: inner.RemoteAddr()}
 }
 func (this *TraceConnection) Read(buffer []byte) (int, error) {
 	read, err := this.Conn.Read(buffer)
 	if err != nil {
-		log.Printf("[INFO] Socket read error for [%s]: [%s]\n", this.name, err)
+		log.Printf("[INFO] Socket read error for [%s] to [%s]. Error: [%s]\n", this.name, this.address, err)
 	}
 	return read, err
 }
 func (this *TraceConnection) Write(buffer []byte) (int, error) {
 	read, err := this.Conn.Write(buffer)
 	if err != nil {
-		log.Printf("[INFO] Socket write error for [%s]: [%s]\n", this.name, err)
+		log.Printf("[INFO] Socket write error for [%s] to [%s]. Error: [%s]\n", this.name, this.address, err)
 	}
 	return read, err
 }
