@@ -6,13 +6,13 @@ import (
 )
 
 type TraceConnection struct {
-	name string
 	net.Conn
+	name string
 }
 
-func NewTraceConnection(name string, inner net.Conn) *TraceConnection {
+func NewTraceConnection(inner net.Conn, name string) *TraceConnection {
 	log.Printf("[INFO] Socket established for [%s] to [%s]\n", name, inner.RemoteAddr())
-	return &TraceConnection{name: name, Conn: inner}
+	return &TraceConnection{Conn: inner, name: name}
 }
 func (this *TraceConnection) Read(buffer []byte) (int, error) {
 	read, err := this.Conn.Read(buffer)
@@ -32,35 +32,35 @@ func (this *TraceConnection) Write(buffer []byte) (int, error) {
 ////////////////////////////////////////////////////
 
 type TraceListener struct {
-	name string
 	net.Listener
+	name string
 }
 
-func NewTraceListener(name string, inner net.Listener) *TraceListener {
-	return &TraceListener{name: name, Listener: inner}
+func NewTraceListener(inner net.Listener, name string) *TraceListener {
+	return &TraceListener{Listener: inner, name: name}
 }
 func (this *TraceListener) Accept() (net.Conn, error) {
 	if socket, err := this.Listener.Accept(); err != nil {
 		return nil, err
 	} else {
-		return NewTraceConnection(this.name, socket), nil
+		return NewTraceConnection(socket, this.name), nil
 	}
 }
 
 ////////////////////////////////////////////////////
 
 type TraceDialer struct {
-	name string
 	Dialer
+	name string
 }
 
-func NewTraceDialer(name string, inner Dialer) *TraceDialer {
-	return &TraceDialer{name: name, Dialer: inner}
+func NewTraceDialer(inner Dialer, name string) *TraceDialer {
+	return &TraceDialer{Dialer: inner, name: name}
 }
 func (this *TraceDialer) Dial(network, address string) (net.Conn, error) {
 	if socket, err := this.Dialer.Dial(network, address); err != nil {
 		return nil, err
 	} else {
-		return NewTraceConnection(this.name, socket), nil
+		return NewTraceConnection(socket, this.name), nil
 	}
 }
