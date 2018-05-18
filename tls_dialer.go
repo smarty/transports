@@ -5,18 +5,12 @@ import (
 	"net"
 )
 
-func NewTLSListener(inner net.Listener, config *tls.Config) net.Listener {
-	return tls.NewListener(inner, config)
-}
-
-////////////////////////////////////////////////////
-
 type TLSDialer struct {
 	config *tls.Config
-	dialer Dialer
+	dialer *net.Dialer
 }
 
-func NewTLSDialer(dialer Dialer, options ...TLSDialerOption) Dialer {
+func NewTLSDialer(dialer *net.Dialer, options ...TLSDialerOption) Dialer {
 	this := &TLSDialer{dialer: dialer, config: DefaultTLSConfig()}
 	for _, option := range options {
 		option(this)
@@ -25,7 +19,7 @@ func NewTLSDialer(dialer Dialer, options ...TLSDialerOption) Dialer {
 }
 
 func (this *TLSDialer) Dial(network, address string) (net.Conn, error) {
-	return tls.DialWithDialer(this.dialer.(*net.Dialer), network, address, this.config)
+	return tls.DialWithDialer(this.dialer, network, address, this.config)
 }
 
 func DefaultTLSConfig() *tls.Config {

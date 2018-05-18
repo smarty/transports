@@ -58,39 +58,3 @@ var (
 	WriteTooLarge = errors.New("buffer to write larger than the max frame size")
 	byteOrdering  = binary.LittleEndian
 )
-
-////////////////////////////////////////////////////
-
-type FrameListener struct {
-	net.Listener
-}
-
-func NewFrameListener(inner net.Listener) FrameListener {
-	return FrameListener{Listener: inner}
-}
-
-func (this FrameListener) Accept() (net.Conn, error) {
-	if socket, err := this.Listener.Accept(); err == nil {
-		return NewFrameConnection(socket), nil
-	} else {
-		return nil, err
-	}
-}
-
-////////////////////////////////////////////////////
-
-type FrameDialer struct {
-	Dialer
-}
-
-func NewFrameDialer(inner Dialer) *FrameDialer {
-	return &FrameDialer{Dialer: inner}
-}
-
-func (this *FrameDialer) Dial(network, address string) (net.Conn, error) {
-	if socket, err := this.Dialer.Dial(network, address); err == nil {
-		return NewFrameConnection(socket), nil
-	} else {
-		return nil, err
-	}
-}
