@@ -12,10 +12,10 @@ func NewGZipDialer(inner Dialer, options ...GZipDialerOption) Dialer {
 	for _, option := range options {
 		option(this)
 	}
-	return this
+	return *this
 }
 
-func (this *GZipDialer) Dial(network, address string) (net.Conn, error) {
+func (this GZipDialer) Dial(network, address string) (net.Conn, error) {
 	if conn, err := this.Dialer.Dial(network, address); err != nil {
 		return nil, err
 	} else {

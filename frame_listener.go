@@ -6,7 +6,7 @@ type FrameListener struct {
 	net.Listener
 }
 
-func NewFrameListener(inner net.Listener) FrameListener {
+func NewFrameListener(inner net.Listener) net.Listener {
 	return FrameListener{Listener: inner}
 }
 

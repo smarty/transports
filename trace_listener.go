@@ -10,10 +10,10 @@ type TraceListener struct {
 	name string
 }
 
-func NewTraceListener(inner net.Listener, name string) *TraceListener {
-	return &TraceListener{Listener: inner, name: name}
+func NewTraceListener(inner net.Listener, name string) net.Listener {
+	return TraceListener{Listener: inner, name: name}
 }
-func (this *TraceListener) Accept() (net.Conn, error) {
+func (this TraceListener) Accept() (net.Conn, error) {
 	if socket, err := this.Listener.Accept(); err != nil {
 		return nil, err
 	} else {

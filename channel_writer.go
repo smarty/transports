@@ -15,7 +15,7 @@ type ChannelWriter struct {
 	buffered [][]byte
 }
 
-func NewChannelWriter(dialer Dialer, address string, capacity int) *ChannelWriter {
+func NewChannelWriter(dialer Dialer, address string, capacity int) io.WriteCloser {
 	this := &ChannelWriter{
 		dialer:  dialer,
 		address: address,

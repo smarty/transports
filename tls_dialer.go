@@ -15,10 +15,10 @@ func NewTLSDialer(dialer *net.Dialer, options ...TLSDialerOption) Dialer {
 	for _, option := range options {
 		option(this)
 	}
-	return this
+	return *this
 }
 
-func (this *TLSDialer) Dial(network, address string) (net.Conn, error) {
+func (this TLSDialer) Dial(network, address string) (net.Conn, error) {
 	return tls.DialWithDialer(this.dialer, network, address, this.config)
 }
 

@@ -7,11 +7,11 @@ type GZipListener struct {
 	compressionLevel int
 }
 
-func NewGZipListener(inner net.Listener, compressionLevel int) *GZipListener {
-	return &GZipListener{Listener: inner, compressionLevel: compressionLevel}
+func NewGZipListener(inner net.Listener, compressionLevel int) net.Listener {
+	return GZipListener{Listener: inner, compressionLevel: compressionLevel}
 }
 
-func (this *GZipListener) Accept() (net.Conn, error) {
+func (this GZipListener) Accept() (net.Conn, error) {
 	if conn, err := this.Listener.Accept(); err != nil {
 		return nil, err
 	} else {

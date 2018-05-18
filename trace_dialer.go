@@ -10,10 +10,10 @@ type TraceDialer struct {
 	name string
 }
 
-func NewTraceDialer(inner Dialer, name string) *TraceDialer {
-	return &TraceDialer{Dialer: inner, name: name}
+func NewTraceDialer(inner Dialer, name string) Dialer {
+	return TraceDialer{Dialer: inner, name: name}
 }
-func (this *TraceDialer) Dial(network, address string) (net.Conn, error) {
+func (this TraceDialer) Dial(network, address string) (net.Conn, error) {
 	if socket, err := this.Dialer.Dial(network, address); err != nil {
 		return nil, err
 	} else {
