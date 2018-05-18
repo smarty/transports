@@ -7,21 +7,21 @@ import (
 )
 
 type DisposeListener struct {
-	inner   net.Listener
+	net.Listener
 	mutex   *sync.Mutex
 	tracked map[io.Closer]struct{} // holds the UNDERLYING/actual socket, not the wrapped/decorated one
 }
 
-func NewDisposeListener(inner net.Listener) DisposeListener {
-	return DisposeListener{
-		inner:   inner,
-		mutex:   &sync.Mutex{},
-		tracked: make(map[io.Closer]struct{}),
+func NewDisposeListener(inner net.Listener) net.Listener {
+	return &DisposeListener{
+		Listener: inner,
+		mutex:    &sync.Mutex{},
+		tracked:  make(map[io.Closer]struct{}),
 	}
 }
 
 func (this *DisposeListener) Accept() (net.Conn, error) {
-	if actual, err := this.inner.Accept(); err != nil {
+	if actual, err := this.Listener.Accept(); err != nil {
 		return nil, err
 	} else {
 		this.track(actual)
@@ -41,7 +41,7 @@ func (this *DisposeListener) dispose(actual io.Closer) {
 }
 
 func (this *DisposeListener) Close() error {
-	err := this.inner.Close()
+	err := this.Listener.Close()
 
 	this.mutex.Lock()
 	defer this.mutex.Unlock() // defer because we could a panic if a socket's Close() method is buggy,
@@ -49,13 +49,6 @@ func (this *DisposeListener) Close() error {
 	for actual := range this.tracked {
 		actual.Close() // closes underlying so this.dispose (with mutex) is never called directly
 	}
-	this.tracked = nil // everything's closed, we don't need the map anymore
 
-	return err
-}
-
-func (this *DisposeListener) IsActive() bool {
-	this.mutex.Lock()
-	defer this.mutex.Unlock()
-	return this.tracked == nil
+	return err // we have are guaranteed the listener and sockets have been closed
 }
