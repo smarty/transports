@@ -11,7 +11,7 @@ type FrameConnection struct {
 	net.Conn
 }
 
-func NewFrameConnection(inner net.Conn) net.Conn {
+func NewFrameConnection(inner net.Conn) FrameConnection {
 	return FrameConnection{Conn: inner}
 }
 
@@ -31,13 +31,22 @@ func (this FrameConnection) Write(buffer []byte) (int, error) {
 
 	return this.Conn.Write(buffer)
 }
-func (this FrameConnection) Read(buffer []byte) (int, error) {
-	var length uint16 = 0
-	if err := binary.Read(this.Conn, byteOrdering, &length); err != nil {
-		return 0, nil
+func (this FrameConnection) ReadHeader() (length uint16, err error) {
+	if err = binary.Read(this.Conn, byteOrdering, &length); err != nil {
+		return 0, err
+	} else {
+		return length, nil
 	}
-
+}
+func (this FrameConnection) ReadBody(buffer []byte) (int, error) {
 	return io.ReadFull(this.Conn, buffer)
+}
+func (this FrameConnection) Read(buffer []byte) (int, error) {
+	if _, err := this.ReadHeader(); err != nil {
+		return 0, err
+	} else {
+		return this.ReadBody(buffer)
+	}
 }
 
 const MaxWriteSize = 64*1024 - 2
