@@ -25,8 +25,11 @@ func NewChannelWriter(dialer Dialer, address string, capacity int) io.WriteClose
 	return this
 }
 
-// NOTE: the buffer cannot be reused because it's being sent to a different goroutine
 func (this *ChannelWriter) Write(buffer []byte) (int, error) {
+	if atomic.LoadUint64(&this.closed) > 0 {
+		return 0, io.EOF
+	}
+
 	select {
 	case this.channel <- buffer:
 		return len(buffer), nil
@@ -35,8 +38,6 @@ func (this *ChannelWriter) Write(buffer []byte) (int, error) {
 	}
 }
 func (this *ChannelWriter) Close() error {
-	// the client is designed to be written to and closed from
-	// exactly one goroutine which is why we shut down the channel
 	if atomic.AddUint64(&this.closed, 1) == 1 {
 		close(this.channel)
 	}
