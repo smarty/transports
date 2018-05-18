@@ -24,5 +24,3 @@ func WithDialTimeout(timeout time.Duration) DialerOption {
 }
 
 const DefaultDialerTimeout = time.Second * 15
-
-////////////////////////////////////////////////////
