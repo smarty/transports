@@ -12,7 +12,6 @@ type TraceConnection struct {
 }
 
 func NewTraceConnection(inner net.Conn, name string) *TraceConnection {
-	log.Printf("[INFO] Socket established for [%s] to [%s]\n", name, inner.RemoteAddr())
 	return &TraceConnection{Conn: inner, name: name, address: inner.RemoteAddr()}
 }
 func (this *TraceConnection) Read(buffer []byte) (int, error) {
@@ -44,6 +43,7 @@ func (this *TraceListener) Accept() (net.Conn, error) {
 	if socket, err := this.Listener.Accept(); err != nil {
 		return nil, err
 	} else {
+		log.Printf("[INFO] Socket established for [%s] from [%s] to [%s].\n", this.name, socket.RemoteAddr(), socket.LocalAddr())
 		return NewTraceConnection(socket, this.name), nil
 	}
 }
@@ -62,6 +62,7 @@ func (this *TraceDialer) Dial(network, address string) (net.Conn, error) {
 	if socket, err := this.Dialer.Dial(network, address); err != nil {
 		return nil, err
 	} else {
+		log.Printf("[INFO] Socket established for [%s] from [%s] to [%s].\n", this.name, socket.LocalAddr(), socket.RemoteAddr())
 		return NewTraceConnection(socket, this.name), nil
 	}
 }
