@@ -31,6 +31,15 @@ func (this FrameConnection) Write(buffer []byte) (int, error) {
 
 	return this.Conn.Write(buffer)
 }
+func (this FrameConnection) Read(buffer []byte) (int, error) {
+	if length, err := this.ReadHeader(); err != nil {
+		return 0, err
+	} else if length > len(buffer) {
+		return 0, io.ErrShortBuffer
+	} else {
+		return this.ReadBody(buffer[0:length])
+	}
+}
 func (this FrameConnection) ReadHeader() (int, error) {
 	var length uint16
 	if err := binary.Read(this.Conn, byteOrdering, &length); err != nil {
@@ -41,15 +50,6 @@ func (this FrameConnection) ReadHeader() (int, error) {
 }
 func (this FrameConnection) ReadBody(buffer []byte) (int, error) {
 	return io.ReadFull(this.Conn, buffer)
-}
-func (this FrameConnection) Read(buffer []byte) (int, error) {
-	if length, err := this.ReadHeader(); err != nil {
-		return 0, err
-	} else if length > len(buffer) {
-		return 0, io.ErrShortBuffer
-	} else {
-		return this.ReadBody(buffer[0:length])
-	}
 }
 
 const MaxWriteSize = 64*1024 - 2
