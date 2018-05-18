@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io"
 	"net"
-	"strings"
 )
 
 type FrameConnection struct {
@@ -73,8 +72,6 @@ func NewFrameListener(inner net.Listener) FrameListener {
 func (this FrameListener) Accept() (net.Conn, error) {
 	if socket, err := this.Listener.Accept(); err == nil {
 		return NewFrameConnection(socket), nil
-	} else if strings.Contains(err.Error(), closedAcceptSocketErrorMessage) {
-		return nil, io.EOF
 	} else {
 		return nil, err
 	}
@@ -97,7 +94,3 @@ func (this *FrameDialer) Dial(network, address string) (net.Conn, error) {
 		return nil, err
 	}
 }
-
-// https://github.com/golang/go/issues/4373
-// https://github.com/golang/go/issues/19252
-const closedAcceptSocketErrorMessage = "use of closed network connection"
