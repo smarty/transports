@@ -1,5 +1,7 @@
 package transports
 
+import "net"
+
 type GZipListener struct {
 	net.Listener
 	compressionLevel int
