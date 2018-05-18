@@ -51,7 +51,7 @@ func NewTCPListener(address string) (net.Listener, error) {
 
 func (this TCPListener) Accept() (net.Conn, error) {
 	if socket, err := this.Listener.Accept(); err == nil {
-		return NewFrameConnection(socket), nil
+		return socket, nil
 	} else if strings.Contains(err.Error(), closedAcceptSocketErrorMessage) {
 		return nil, io.EOF
 	} else {
