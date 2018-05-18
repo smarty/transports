@@ -9,7 +9,10 @@ type Dialer interface {
 	Dial(string, string) (net.Conn, error)
 }
 
-func DefaultDialer(options ...DialerOption) *net.Dialer {
+func DefaultDialer(options ...DialerOption) Dialer {
+	return NetDialer(options...)
+}
+func NetDialer(options ...DialerOption) *net.Dialer {
 	this := &net.Dialer{Timeout: DefaultDialerTimeout}
 	for _, option := range options {
 		option(this)
