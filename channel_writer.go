@@ -26,10 +26,6 @@ func NewChannelWriter(dialer Dialer, address string, capacity int) io.WriteClose
 }
 
 func (this *ChannelWriter) Write(buffer []byte) (int, error) {
-	if this.isClosed() {
-		return 0, ErrClosedSocket
-	}
-
 	select {
 	case this.channel <- buffer:
 		return len(buffer), nil
