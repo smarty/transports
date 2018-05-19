@@ -34,7 +34,7 @@ func (this TCPListener) Accept() (net.Conn, error) {
 	if socket, err := this.Listener.Accept(); err == nil {
 		return socket, nil
 	} else if IsClosedError(err) {
-		return nil, ErrClosedSocket
+		return nil, ErrClosed
 	} else {
 		return nil, err
 	}
@@ -48,4 +48,4 @@ func IsClosedError(err error) bool {
 // https://github.com/golang/go/issues/19252
 const closedNetworkErrorMessage = "use of closed network connection"
 
-var ErrClosedSocket = errors.New(closedNetworkErrorMessage)
+var ErrClosed = errors.New(closedNetworkErrorMessage)

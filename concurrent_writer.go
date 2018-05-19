@@ -23,7 +23,7 @@ func (this *ConcurrentWriter) Write(buffer []byte) (int, error) {
 }
 func (this *ConcurrentWriter) write(buffer []byte) (int, error) {
 	if this.closed {
-		return 0, ErrClosedSocket
+		return 0, ErrClosed
 	} else {
 		return this.inner.Write(buffer)
 	}

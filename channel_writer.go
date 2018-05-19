@@ -30,7 +30,7 @@ func (this *ChannelWriter) Write(buffer []byte) (int, error) {
 	case this.channel <- buffer:
 		return len(buffer), nil
 	default:
-		return 0, ErrChannelFull
+		return 0, ErrBufferFull
 	}
 }
 func (this *ChannelWriter) Close() error {
@@ -93,4 +93,4 @@ func (this *ChannelWriter) closeWriter() {
 	}
 }
 
-var ErrChannelFull = errors.New("channel full")
+var ErrBufferFull = errors.New("buffer full")
