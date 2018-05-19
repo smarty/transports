@@ -27,7 +27,7 @@ func NewChannelWriter(dialer Dialer, address string, capacity int) io.WriteClose
 
 func (this *ChannelWriter) Write(buffer []byte) (int, error) {
 	if atomic.LoadUint64(&this.closed) > 0 {
-		return 0, io.EOF
+		return 0, ErrClosedSocket
 	}
 
 	select {

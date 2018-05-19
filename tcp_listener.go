@@ -1,7 +1,7 @@
 package transports
 
 import (
-	"io"
+	"errors"
 	"log"
 	"net"
 	"strings"
@@ -33,13 +33,19 @@ func NewTCPListener(address string) (net.Listener, error) {
 func (this TCPListener) Accept() (net.Conn, error) {
 	if socket, err := this.Listener.Accept(); err == nil {
 		return socket, nil
-	} else if strings.Contains(err.Error(), closedAcceptSocketErrorMessage) {
-		return nil, io.EOF
+	} else if IsClosedError(err) {
+		return nil, ErrClosedSocket
 	} else {
 		return nil, err
 	}
 }
 
+func IsClosedError(err error) bool {
+	return err != nil && strings.Contains(err.Error(), closedNetworkErrorMessage)
+}
+
 // https://github.com/golang/go/issues/4373
 // https://github.com/golang/go/issues/19252
-const closedAcceptSocketErrorMessage = "use of closed network connection"
+const closedNetworkErrorMessage = "use of closed network connection"
+
+var ErrClosedSocket = errors.New(closedNetworkErrorMessage)
