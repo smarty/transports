@@ -34,7 +34,7 @@ func (this *ChannelWriter) Write(buffer []byte) (int, error) {
 	}
 }
 func (this *ChannelWriter) Close() error {
-	if atomic.AddUint64(&this.closed, 1) == 1 {
+	if atomic.CompareAndSwapUint64(&this.closed, 0, 1) {
 		close(this.channel)
 	}
 	return nil
