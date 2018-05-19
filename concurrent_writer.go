@@ -17,25 +17,24 @@ func NewConcurrentWriter(inner io.WriteCloser) io.WriteCloser {
 
 func (this *ConcurrentWriter) Write(buffer []byte) (int, error) {
 	this.mutex.RLock()
-	if this.closed {
-		this.mutex.RUnlock()
-		return 0, ErrClosedSocket
-	}
-
-	written, err := this.inner.Write(buffer)
+	written, err := this.write(buffer)
 	this.mutex.RUnlock()
 	return written, err
 }
-
-func (this *ConcurrentWriter) Close() (err error) {
-	this.mutex.Lock()
+func (this *ConcurrentWriter) write(buffer []byte) (int, error) {
 	if this.closed {
-		this.mutex.Unlock()
-		return
+		return 0, ErrClosedSocket
+	} else {
+		return this.inner.Write(buffer)
 	}
+}
 
+func (this *ConcurrentWriter) Close() error {
+	this.mutex.Lock()
+	defer this.mutex.Unlock()
+	if this.closed {
+		return nil
+	}
 	this.closed = true
-	err = this.inner.Close()
-	this.mutex.Unlock()
-	return err
+	return this.inner.Close()
 }
