@@ -50,5 +50,5 @@ func (this *DisposeListener) Close() error {
 		actual.Close() // closes underlying so this.dispose (with mutex) is never called directly
 	}
 
-	return err // we have are guaranteed the listener and sockets have been closed
+	return err // we are guaranteed the listener and child sockets have been closed
 }
