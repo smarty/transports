@@ -3,13 +3,13 @@ package transports
 import (
 	"errors"
 	"io"
-	"sync/atomic"
+	"sync"
 )
 
 type ChannelWriter struct {
 	inner   io.WriteCloser
 	channel chan []byte
-	closed  int32
+	once    sync.Once
 }
 
 func NewChannelWriter(inner io.WriteCloser, capacity int) io.WriteCloser {
@@ -31,26 +31,19 @@ func (this *ChannelWriter) listen() {
 	defer this.inner.Close()
 
 	for buffer := range this.channel {
-		this.write(buffer)
+		for !this.write(buffer) {
+			// write failed, try again
+		}
 	}
 }
 func (this *ChannelWriter) write(buffer []byte) bool {
-	for !this.isClosed() {
-		if _, err := this.inner.Write(buffer); err == nil {
-			return true
-		}
-	}
-	return false
+	_, err := this.inner.Write(buffer)
+	return err == nil
 }
 
 func (this *ChannelWriter) Close() error {
-	if atomic.CompareAndSwapInt32(&this.closed, 0, 1) {
-		close(this.channel)
-	}
+	this.once.Do(func() { close(this.channel) })
 	return nil
-}
-func (this *ChannelWriter) isClosed() bool {
-	return atomic.LoadInt32(&this.closed) > 0
 }
 
 var ErrBufferFull = errors.New("buffer full")
