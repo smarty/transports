@@ -9,7 +9,7 @@ import (
 type DisposeListener struct {
 	net.Listener
 	mutex   *sync.Mutex
-	tracked map[io.Closer]struct{} // holds the UNDERLYING/actual socket, not the wrapped/decorated one
+	tracked map[io.Closer]struct{}
 }
 
 func NewDisposeListener(inner net.Listener) net.Listener {
@@ -24,17 +24,17 @@ func (this *DisposeListener) Accept() (net.Conn, error) {
 	if actual, err := this.Listener.Accept(); err != nil {
 		return nil, err
 	} else {
-		this.track(actual)
-		return NewDisposeConnection(actual, this.dispose), nil
+		this.add(actual)
+		return NewDisposeConnection(actual, this.remove), nil
 	}
 }
-func (this *DisposeListener) track(actual net.Conn) {
+func (this *DisposeListener) add(actual net.Conn) {
 	this.mutex.Lock()
 	this.tracked[actual] = struct{}{}
 	this.mutex.Unlock()
 
 }
-func (this *DisposeListener) dispose(actual io.Closer) {
+func (this *DisposeListener) remove(actual io.Closer) {
 	this.mutex.Lock()
 	delete(this.tracked, actual)
 	this.mutex.Unlock()
@@ -47,7 +47,7 @@ func (this *DisposeListener) Close() error {
 	defer this.mutex.Unlock()
 
 	for actual := range this.tracked {
-		actual.Close() // closes UNDERLYING/actual socket
+		actual.Close()
 	}
 
 	return err
