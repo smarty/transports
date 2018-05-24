@@ -14,7 +14,7 @@ type ChannelWriter struct {
 
 func NewChannelWriter(inner io.WriteCloser, capacity int) io.WriteCloser {
 	this := &ChannelWriter{inner: inner, channel: make(chan []byte, capacity)}
-	go this.listen()
+	go this.listen() // design note: who should start the listener?
 	return this
 }
 
