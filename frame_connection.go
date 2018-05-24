@@ -22,7 +22,7 @@ func (this FrameConnection) Write(buffer []byte) (int, error) {
 	}
 
 	if payloadSize > MaxWriteSize {
-		return 0, WriteTooLarge
+		return 0, BufferTooLarge
 	}
 
 	if err := binary.Write(this.Conn, byteOrdering, uint16(payloadSize)); err != nil {
@@ -55,6 +55,6 @@ func (this FrameConnection) ReadBody(buffer []byte) (int, error) {
 const MaxWriteSize = 64*1024 - 2
 
 var (
-	WriteTooLarge = errors.New("buffer to write larger than the max frame size")
-	byteOrdering  = binary.LittleEndian
+	BufferTooLarge = errors.New("buffer larger than the max frame size")
+	byteOrdering   = binary.LittleEndian
 )
