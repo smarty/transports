@@ -44,11 +44,11 @@ func (this *DisposeListener) Close() error {
 	err := this.Listener.Close()
 
 	this.mutex.Lock()
-	defer this.mutex.Unlock() // defer because we could a panic if a socket's Close() method is buggy,
+	defer this.mutex.Unlock()
 
 	for actual := range this.tracked {
-		actual.Close() // closes underlying so this.dispose (with mutex) is never called directly
+		actual.Close() // closes UNDERLYING/actual socket
 	}
 
-	return err // we are guaranteed the listener and child sockets have been closed
+	return err
 }
