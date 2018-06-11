@@ -35,5 +35,5 @@ func (this TraceConnection) Close() error {
 }
 
 func canTraceError(err error) bool {
-	return err != nil && err != io.EOF && !IsClosedError(err)
+	return err != nil && err != io.EOF && err != io.ErrUnexpectedEOF && !IsClosedError(err)
 }
