@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"sync"
+	"time"
 )
 
 type ChannelWriter struct {
@@ -32,7 +33,7 @@ func (this *ChannelWriter) listen() {
 
 	for buffer := range this.channel {
 		for !this.write(buffer) {
-			// write failed, try again
+			time.Sleep(time.Millisecond * 50)
 		}
 	}
 }
