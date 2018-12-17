@@ -32,8 +32,8 @@ func (this *ChannelWriter) listen() {
 	defer this.inner.Close()
 
 	for buffer := range this.channel {
-		for !this.write(buffer) {
-			time.Sleep(time.Millisecond * 50)
+		for attempt := time.Millisecond; !this.write(buffer) && attempt < 10; attempt++ {
+			time.Sleep(attempt * 100)
 		}
 	}
 }
