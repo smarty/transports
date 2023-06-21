@@ -1,3 +1,3 @@
-module github.com/smartystreets/transports
+module github.com/smarty/transports
 
 go 1.17
