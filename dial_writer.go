@@ -1,6 +1,9 @@
 package transports
 
-import "io"
+import (
+	"io"
+	"log"
+)
 
 type DialWriter struct {
 	dialer  Dialer
@@ -13,6 +16,7 @@ func NewDialWriter(dialer Dialer, address string) *DialWriter {
 }
 
 func (this *DialWriter) Write(buffer []byte) (int, error) {
+	log.Printf("DialWriter Write - buffer contents: [%s]", buffer)
 	if this.writer != nil {
 		return this.write(buffer)
 	} else if writer, err := this.dialer.Dial("tcp", this.address); err != nil {
