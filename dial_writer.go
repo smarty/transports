@@ -16,7 +16,6 @@ func NewDialWriter(dialer Dialer, address string) *DialWriter {
 }
 
 func (this *DialWriter) Write(buffer []byte) (int, error) {
-	log.Printf("DialWriter Write - buffer contents: [%s]", buffer)
 	if this.writer != nil {
 		return this.write(buffer)
 	} else if writer, err := this.dialer.Dial("tcp", this.address); err != nil {
@@ -27,6 +26,7 @@ func (this *DialWriter) Write(buffer []byte) (int, error) {
 	}
 }
 func (this *DialWriter) write(buffer []byte) (int, error) {
+	log.Printf("DialWriter write - buffer contents: [%s]", buffer)
 	if written, err := this.writer.Write(buffer); err == nil {
 		return written, nil
 	} else {

@@ -3,6 +3,7 @@ package transports
 import (
 	"errors"
 	"io"
+	"log"
 	"sync"
 	"time"
 )
@@ -38,6 +39,7 @@ func (this *ChannelWriter) listen() {
 	}
 }
 func (this *ChannelWriter) write(buffer []byte) bool {
+	log.Printf("ChannelWriter write - buffer contents: [%s]", buffer)
 	_, err := this.inner.Write(buffer)
 	return err == nil
 }

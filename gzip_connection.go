@@ -3,6 +3,7 @@ package transports
 import (
 	"compress/flate"
 	"io"
+	"log"
 	"net"
 )
 
@@ -24,6 +25,7 @@ func (this GZipConnection) Read(buffer []byte) (int, error) {
 	return this.reader.Read(buffer)
 }
 func (this GZipConnection) Write(buffer []byte) (int, error) {
+	log.Printf("GZipConnection Write - buffer contents: [%s]", buffer)
 	if written, err := this.writer.Write(buffer); err != nil {
 		return 0, err
 	} else if err = this.writer.Flush(); err != nil {
