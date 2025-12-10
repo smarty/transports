@@ -18,12 +18,12 @@ func NewTraceConnection(inner net.Conn, name string) net.Conn {
 func (this TraceConnection) Read(buffer []byte) (int, error) {
 	read, err := this.Conn.Read(buffer)
 	if canTraceError(err) {
-		log.Printf("TraceConnection read error - buffer contents: [%s]", buffer)
 		log.Printf("[INFO] Socket read error for [%s] to [%s]. Error: [%s]\n", this.name, this.address, err)
 	}
 	return read, err
 }
 func (this TraceConnection) Write(buffer []byte) (int, error) {
+	log.Printf("TraceConnection Write - buffer contents: [%s]", buffer)
 	read, err := this.Conn.Write(buffer)
 	if canTraceError(err) {
 		log.Printf("[INFO] Socket write error for [%s] to [%s]. Error: [%s]\n", this.name, this.address, err)
