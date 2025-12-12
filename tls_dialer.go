@@ -2,6 +2,7 @@ package transports
 
 import (
 	"crypto/tls"
+	"log"
 	"net"
 )
 
@@ -19,7 +20,13 @@ func NewTLSDialer(dialer *net.Dialer, options ...TLSDialerOption) Dialer {
 }
 
 func (this TLSDialer) Dial(network, address string) (net.Conn, error) {
-	return tls.DialWithDialer(this.dialer, network, address, this.config)
+	conn, err := tls.DialWithDialer(this.dialer, network, address, this.config)
+	if err != nil {
+		log.Printf("TLSDialer Dial error: [%s]", err.Error())
+	} else {
+		log.Printf("TLSDialer Dial success - local address: [%s]", conn.LocalAddr().String())
+	}
+	return conn, err
 }
 
 type TLSDialerOption func(*TLSDialer)
