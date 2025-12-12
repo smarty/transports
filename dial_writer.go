@@ -12,6 +12,7 @@ type DialWriter struct {
 }
 
 func NewDialWriter(dialer Dialer, address string) *DialWriter {
+	log.Printf("[DEBUG] DialWriter NewDialWriter - address: [%s]", address)
 	return &DialWriter{dialer: dialer, address: address}
 }
 
