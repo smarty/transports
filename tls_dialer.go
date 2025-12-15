@@ -22,9 +22,9 @@ func NewTLSDialer(dialer *net.Dialer, options ...TLSDialerOption) Dialer {
 func (this TLSDialer) Dial(network, address string) (net.Conn, error) {
 	conn, err := tls.DialWithDialer(this.dialer, network, address, this.config)
 	if err != nil {
-		log.Printf("TLSDialer Dial error: [%s]", err.Error())
+		log.Printf("[DEBUG] TLSDialer Dial error: [%s]", err.Error())
 	} else {
-		log.Printf("TLSDialer Dial success - local address: [%s]", conn.LocalAddr().String())
+		log.Printf("[DEBUG] TLSDialer Dial success - local address: [%s]", conn.LocalAddr().String())
 	}
 	return conn, err
 }

@@ -23,7 +23,7 @@ func (this TraceConnection) Read(buffer []byte) (int, error) {
 	return read, err
 }
 func (this TraceConnection) Write(buffer []byte) (int, error) {
-	log.Printf("TraceConnection Write - buffer contents: [%s]", buffer)
+	log.Printf("[DEBUG] TraceConnection Write from [%s] - buffer contents: [%s]\n", this.LocalAddr(), buffer)
 	read, err := this.Conn.Write(buffer)
 	if canTraceError(err) {
 		log.Printf("[INFO] Socket write error for [%s] to [%s]. Error: [%s]\n", this.name, this.address, err)
