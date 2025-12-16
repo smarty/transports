@@ -14,12 +14,11 @@ func NewTraceDialer(inner Dialer, name string) Dialer {
 	return TraceDialer{Dialer: inner, name: name}
 }
 func (this TraceDialer) Dial(network, address string) (net.Conn, error) {
+	log.Printf("[INFO] Parameters: network [%s] address [%s]\n", network, address)
 	if socket, err := this.Dialer.Dial(network, address); err != nil {
-		log.Printf("[DEBUG] Parameters: network=[%s] address=[%s]\n", network, address)
 		log.Printf("[INFO] Socket establish failed for [%s] connecting to network[%s] and address[%s].\n", this.name, network, address)
 		return nil, err
 	} else {
-		log.Printf("[DEBUG] Parameters: network=[%s] address=[%s]\n", network, address)
 		log.Printf("[INFO] Socket established for [%s] from [%s] to [%s].\n", this.name, socket.LocalAddr(), socket.RemoteAddr())
 		return NewTraceConnection(socket, this.name), nil
 	}
